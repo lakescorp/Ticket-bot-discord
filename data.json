@@ -4,4 +4,6 @@
     "ticket-emoji": "🎟️",
     "bot-role": "[🤖]bot[🤖]",
     "ticket-support-roles":[],
+    "roles-to-mention":[],
+    "ticket-channel-ids":[]
 }
