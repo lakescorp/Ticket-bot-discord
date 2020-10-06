@@ -62,7 +62,7 @@ class TicketCog(commands.Cog):
             def check(message):
                 return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() == "close"
             try:
-                em = discord.Embed(title="Closing ticket", description="Are you sure you want to close this ticket? Reply with close if you are sure.", color=0x00a8ff)  
+                em = discord.Embed(title="Closing ticket", description="Are you sure you want to close this ticket? Reply with 'close' if you are sure.", color=0x00a8ff)  
                 await ctx.send(embed=em)
                 await self.bot.wait_for('message', check=check, timeout=60)
                 await ctx.channel.delete()
