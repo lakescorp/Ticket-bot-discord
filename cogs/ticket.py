@@ -74,7 +74,7 @@ class TicketCog(commands.Cog):
             except:
                 pass
 
-    @commands.command()
+    @commands.command(name='addsupport', brief='Add support role', description='*addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).')
     async def addsupport(self, ctx, role_id=None, mentionRole = True):
         with open('data.json') as f:
             data = json.load(f)
@@ -123,7 +123,7 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Add support", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command()
+    @commands.command(name='delsupport', brief='Delete support role', description='*delsupport Removes role from support team. (admin-level command).')
     async def delsupport(self, ctx, role_id=None):
         with open('data.json') as f:
             data = json.load(f)
@@ -175,7 +175,7 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Delete Support", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command()
+    @commands.command(name='addmentionrole', brief='Add mentionable role', description='*addmentionrole This command adds a role to the list of mentioned roles. (admin-level command).')
     async def addmentionrole(self, ctx, role_id=None):
 
         with open('data.json') as f:
@@ -223,7 +223,7 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Add mention", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command()
+    @commands.command(name='delmentionrole', brief='Delete mentionable role', description='*delmentionrole This command removes a role from the list of mentioned roles. (admin-level command).')
     async def delmentionrole(self, ctx, role_id=None):
 
         with open('data.json') as f:
