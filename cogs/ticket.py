@@ -75,7 +75,7 @@ class TicketCog(commands.Cog):
                 pass
 
     @commands.command(name='addsupport', brief='Add support role', description='*addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).')
-    async def addsupport(self, ctx, role_id=None, mentionRole = True):
+    async def addsupport(self, ctx, role_id=None, mentionRole = "true"):
         with open('data.json') as f:
             data = json.load(f)
         
@@ -101,7 +101,7 @@ class TicketCog(commands.Cog):
 
                     data["ticket-support-roles"].append(role_id)
 
-                    if mentionRole:
+                    if str(mentionRole) == "true":
                         data["roles-to-mention"].append(role_id)
 
                     with open('data.json', 'w') as f:
