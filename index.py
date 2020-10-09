@@ -1,4 +1,3 @@
-from cogs.ticket import TicketCog
 import discord
 from discord.ext import commands
 
