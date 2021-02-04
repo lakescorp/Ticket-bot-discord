@@ -137,7 +137,7 @@ class TicketCog(commands.Cog):
     #
     ######
     @commands.command(name='addsupport', brief='Add support role', description='[prefix]addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).')
-    async def addsupport(self, ctx, role_id=None, mentionRole = "true"):
+    async def addsupport(self, ctx, role_id : discord.Role, mentionRole = "true"):
         data = await TicketCog.dataExists(ctx)
         if  data is None :
             return
@@ -146,32 +146,23 @@ class TicketCog(commands.Cog):
 
         for role_id in data["ticket-support-roles"]:
             try:
-                if ctx.guild.get_role(role_id) in ctx.author.roles:
+                if ctx.guild.get_role(role_id.id) in ctx.author.roles:
                     valid_user = True
             except:
                 pass
         
         if valid_user or ctx.author.guild_permissions.administrator:
-            role_id = int(role_id)
 
             if role_id not in data["ticket-support-roles"]:
 
                 try:
-                    role = ctx.guild.get_role(role_id)
-
-                    with open(data_file_name) as f:
-                        data = json.load(f)
-
-                    data["ticket-support-roles"].append(role_id)
-
+                    #role = ctx.guild.get_role(role_id)
+                    data["ticket-support-roles"].append(str(role_id.id))
                     if str(mentionRole) == "true":
-                        data["roles-to-mention"].append(role_id)
-
+                        data["roles-to-mention"].append(str(role_id.id))
                     with open('data.json', 'w') as f:
                         json.dump(data, f)
-                    
-                    em = discord.Embed(title="Add support", description="You have successfully added `{}` to the support team.".format(role.name), color=0x00a8ff)
-
+                    em = discord.Embed(title="Add support", description="You have successfully added `{}` to the support team.".format(role_id.name), color=0x00a8ff)
                     await ctx.send(embed=em)
 
                 except:
@@ -195,16 +186,16 @@ class TicketCog(commands.Cog):
     #
     ######
     @commands.command(name='delsupport', brief='Delete support role', description='[prefix]delsupport Removes role from support team. (admin-level command).')
-    async def delsupport(self, ctx, role_id=None):
+    async def delsupport(self, ctx, role_id : discord.Role):
         data = await TicketCog.dataExists(ctx)
         if  data is None :
             return
 
         valid_user = False
 
-        for role_id in data["ticket-support-roles"]:
+        for role in data["ticket-support-roles"]:
             try:
-                if ctx.guild.get_role(role_id) in ctx.author.roles:
+                if ctx.guild.get_role(role) in ctx.author.roles:
                     valid_user = True
             except:
                 pass
@@ -212,30 +203,17 @@ class TicketCog(commands.Cog):
         if valid_user or ctx.author.guild_permissions.administrator:
 
             try:
-                role_id = int(role_id)
-                role = ctx.guild.get_role(role_id)
-
-                with open(data_file_name) as f:
-                    data = json.load(f)
-
                 valid_roles = data["ticket-support-roles"]
-
-                if role_id in valid_roles:
-                    index = valid_roles.index(role_id)
-
+                if str(role_id.id) in valid_roles:
+                    index = valid_roles.index(str(role_id.id))
                     del valid_roles[index]
-
                     data["ticket-support-roles"] = valid_roles
-
                     with open('data.json', 'w') as f:
                         json.dump(data, f)
-
-                    em = discord.Embed(title="Delete Support", description="You have successfully removed `{}` from the support team.".format(role.name), color=0x00a8ff)
-
+                    em = discord.Embed(title="Delete Support", description="You have successfully removed `{}` from the support team.".format(role_id.name), color=0x00a8ff)
                     await ctx.send(embed=em)
                 
                 else:
-                    
                     em = discord.Embed(title="Delete Support", description="That role already doesn't have access to tickets!", color=0x00a8ff)
                     await ctx.send(embed=em)
 
@@ -271,8 +249,6 @@ class TicketCog(commands.Cog):
                 pass
         
         if valid_user or ctx.author.guild_permissions.administrator:
-
-            role_id = int(role_id)
 
             if role_id not in data["roles-to-mention"]:
 
@@ -329,7 +305,6 @@ class TicketCog(commands.Cog):
         if valid_user or ctx.author.guild_permissions.administrator:
 
             try:
-                role_id = int(role_id)
                 role = ctx.guild.get_role(role_id)
 
                 with open(data_file_name) as f:
@@ -380,8 +355,7 @@ class TicketCog(commands.Cog):
                     await ticket_channel.set_permissions(payload.member, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
 
                     for role_id in data["ticket-support-roles"]:
-                            role = payload.member.guild.get_role(role_id)
-
+                            role = payload.member.guild.get_role(int(role_id))
                             await ticket_channel.set_permissions(role, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
 
                     em = discord.Embed(title="New ticket from {}#{}".format(payload.member.name, payload.member.discriminator), color=0x00a8ff)
@@ -392,11 +366,9 @@ class TicketCog(commands.Cog):
                     if data["roles-to-mention"] != []:
 
                         for role_id in data["roles-to-mention"]:
-                            role = payload.member.guild.get_role(role_id)
-
-                            if role.mentionable:
-                                pinged_msg_content += role.mention
-                                pinged_msg_content += " "
+                            role = payload.member.guild.get_role(int(role_id))
+                            pinged_msg_content += role.mention
+                            pinged_msg_content += " "
                     if pinged_msg_content != "":
                         em.add_field(name = "Support team", value = pinged_msg_content)
 
