@@ -10,27 +10,72 @@ import discord
 from discord.ext import commands
 import json
 
+######## editable parameters
+data_file_name = "data.json"
+########
+
 class TicketCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    #####
+    #   Check if dta exists
+    #      if true -> returns data 
+    #       else -> sends a message
+    #
+    ######
+    async def dataExists(ctx,isAdmin=False):
+        try:
+            with open(data_file_name, encoding="utf8") as f:
+                data = json.load(f)
+                return data
+        except:
+            contact = ""
+            if not isAdmin:
+                contact = ", please contact with admin."
+            await ctx.send('[ERROR]: File '+ data_file_name +' doesn\'t exist'+contact)
+            return     
+
+
+    #####
+    #   create_ticket -> Creates a ticket message
+    #      Creates a message in the channel where it is written, which when reacted to by users, creates a chat in the same category 
+    #
+    #   Bot permissions: admin
+    #   User permissions: admin
+    #
+    ######
     @commands.command(name='create_ticket', brief='Creates a ticket message', description='Creates a message in the channel where it is written, which when reacted to by users, creates a chat in the same category')
     @commands.has_permissions(administrator=True)
     async def create_ticket(self, ctx):
         await ctx.message.delete()
-        with open("data.json") as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx, True)
+        if  data is None :
+            return
 
         message = await ctx.send('React to this message with '+data["ticket-emoji"] + ' to open a private chat with the support team')
         data["ticket-react-message-id"] = int(message.id)
         await message.add_reaction(data["ticket-emoji"])
-        with open("data.json", 'w') as f:
-            json.dump(data, f)
 
-    @commands.command(name='ticket_help', brief='Shows help', description='*ticket_help shows the ticket commands')
+        try:
+            with open(data_file_name, 'w') as f:
+                json.dump(data, f)
+        except:
+            await ctx.send('[ERROR]: File '+ data_file_name+', it isn\'t writtable try again')
+
+    #####
+    #   ticket_help -> Shows help
+    #      [prefix]ticket_help shows the ticket commands 
+    #
+    #   Bot permissions: read / write
+    #   User permissions: everyone
+    #
+    ######
+    @commands.command(name='ticket_help', brief='Shows help', description='[prefix]ticket_help shows the ticket commands')
     async def ticket_help(self, ctx):
-        with open("data.json") as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
         
         valid_user = False
 
@@ -52,10 +97,19 @@ class TicketCog(commands.Cog):
             em.add_field(name="delmentionrole <role_id>", value="This command removes a role from the list of mentioned roles. (admin-level command).")
             await ctx.send(embed=em)
 
-    @commands.command(name='close', brief='Close ticket', description='*close closes the ticket channel')
+    #####
+    #   close -> Close ticket
+    #      [prefix]close closes the ticket channel 
+    #
+    #   Bot permissions: read / write
+    #   User permissions: everyone
+    #
+    ######
+    @commands.command(name='close', brief='Close ticket', description='[prefix]close closes the ticket channel')
     async def close(self, ctx):
-        with open('data.json') as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
 
         if ctx.channel.id in data["ticket-channel-ids"]:
             channel_id = ctx.channel.id
@@ -74,10 +128,19 @@ class TicketCog(commands.Cog):
             except:
                 pass
 
-    @commands.command(name='addsupport', brief='Add support role', description='*addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).')
+    #####
+    #   addsupport -> Add support role
+    #      [prefix]addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).
+    #
+    #   Bot permissions: read / write
+    #   User permissions: admin or support
+    #
+    ######
+    @commands.command(name='addsupport', brief='Add support role', description='[prefix]addsupport Adds a role to the support team. It is added to mention role by defect. (admin-level command).')
     async def addsupport(self, ctx, role_id=None, mentionRole = "true"):
-        with open('data.json') as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
         
         valid_user = False
 
@@ -96,7 +159,7 @@ class TicketCog(commands.Cog):
                 try:
                     role = ctx.guild.get_role(role_id)
 
-                    with open("data.json") as f:
+                    with open(data_file_name) as f:
                         data = json.load(f)
 
                     data["ticket-support-roles"].append(role_id)
@@ -123,10 +186,19 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Add support", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command(name='delsupport', brief='Delete support role', description='*delsupport Removes role from support team. (admin-level command).')
+    #####
+    #   delsupport -> Delete support role
+    #      [prefix]delsupport Removes role from support team. (admin-level command).
+    #
+    #   Bot permissions: read / write
+    #   User permissions: admin or support
+    #
+    ######
+    @commands.command(name='delsupport', brief='Delete support role', description='[prefix]delsupport Removes role from support team. (admin-level command).')
     async def delsupport(self, ctx, role_id=None):
-        with open('data.json') as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
 
         valid_user = False
 
@@ -143,7 +215,7 @@ class TicketCog(commands.Cog):
                 role_id = int(role_id)
                 role = ctx.guild.get_role(role_id)
 
-                with open("data.json") as f:
+                with open(data_file_name) as f:
                     data = json.load(f)
 
                 valid_roles = data["ticket-support-roles"]
@@ -175,11 +247,19 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Delete Support", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command(name='addmentionrole', brief='Add mentionable role', description='*addmentionrole This command adds a role to the list of mentioned roles. (admin-level command).')
+    #####
+    #   addmentionrole -> Add mentionable role
+    #      [prefix]addmentionrole This command adds a role to the list of mentioned roles. (admin-level command).
+    #
+    #   Bot permissions: read / write
+    #   User permissions: admin or support
+    #
+    ######
+    @commands.command(name='addmentionrole', brief='Add mentionable role', description='[prefix]addmentionrole This command adds a role to the list of mentioned roles. (admin-level command).')
     async def addmentionrole(self, ctx, role_id=None):
-
-        with open('data.json') as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
         
         valid_user = False
 
@@ -199,7 +279,7 @@ class TicketCog(commands.Cog):
                 try:
                     role = ctx.guild.get_role(role_id)
 
-                    with open("data.json") as f:
+                    with open(data_file_name) as f:
                         data = json.load(f)
 
                     data["roles-to-mention"].append(role_id)
@@ -223,11 +303,19 @@ class TicketCog(commands.Cog):
             em = discord.Embed(title="Add mention", description="Sorry, you don't have permission to run that command.", color=0x00a8ff)
             await ctx.send(embed=em)
 
-    @commands.command(name='delmentionrole', brief='Delete mentionable role', description='*delmentionrole This command removes a role from the list of mentioned roles. (admin-level command).')
+    #####
+    #   delmentionrole -> Delete mentionable role
+    #      [prefix]delmentionrole This command removes a role from the list of mentioned roles. (admin-level command).
+    #
+    #   Bot permissions: read / write
+    #   User permissions: admin or support
+    #
+    ######
+    @commands.command(name='delmentionrole', brief='Delete mentionable role', description='[prefix]delmentionrole This command removes a role from the list of mentioned roles. (admin-level command).')
     async def delmentionrole(self, ctx, role_id=None):
-
-        with open('data.json') as f:
-            data = json.load(f)
+        data = await TicketCog.dataExists(ctx)
+        if  data is None :
+            return
         
         valid_user = False
 
@@ -244,7 +332,7 @@ class TicketCog(commands.Cog):
                 role_id = int(role_id)
                 role = ctx.guild.get_role(role_id)
 
-                with open("data.json") as f:
+                with open(data_file_name) as f:
                     data = json.load(f)
 
                 pinged_roles = data["roles-to-mention"]
@@ -276,7 +364,7 @@ class TicketCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        with open("data.json") as f:
+        with open(data_file_name) as f:
             data = json.load(f)
         message_id = payload.message_id
         if message_id == int(data["ticket-react-message-id"]):
@@ -315,7 +403,7 @@ class TicketCog(commands.Cog):
                     await ticket_channel.send(embed=em)
                     data["ticket-channel-ids"].append(ticket_channel.id)
                     data["ticket-counter"] = int(ticket_number)
-                    with open("data.json", 'w') as f:
+                    with open(data_file_name, 'w') as f:
                         json.dump(data, f)
 
 def setup(bot):
