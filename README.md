@@ -3,9 +3,6 @@ Ticket message reactive discord bot using cogs
 
 Ticket bot based on: https://github.com/ifisq/discord-ticket-system
 
-# In future versions
-- When the ticket is closed the bot will send both the admin and the ticket creator a .txt file with the conversations.  
-
 # Commands:  
 - create_ticket: Creates a message in the channel where it is written, which when reacted to by users, creates a chat in the same category  
 - close: It closes the ticket channel  
@@ -19,3 +16,4 @@ Ticket bot based on: https://github.com/ifisq/discord-ticket-system
 - Add a support team by adding roles  
 - Mention roles wen creating new tickets  
 - Close tickets  
+- When the ticket is closed the bot sends to people participating on ticket a .txt file with the conversations. 
