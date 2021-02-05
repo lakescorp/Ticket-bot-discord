@@ -19,7 +19,7 @@ class TicketCog(commands.Cog):
         self.bot = bot
 
     #####
-    #   Check if dta exists
+    #   Check if data exists
     #      if true -> returns data 
     #       else -> sends a message
     #
@@ -36,6 +36,18 @@ class TicketCog(commands.Cog):
             await ctx.send('[ERROR]: File '+ data_file_name +' doesn\'t exist'+contact)
             return     
 
+    #####
+    #   Sends log to admin and ticket creator
+    #
+    ######
+    async def SendLog(bot, author, contentOne: str = "Default Message", contentTwo: str = "\uFEFF",  color=0x808080,  timestamp=None,  file: discord.File = None,):
+        embed = discord.Embed(title=contentOne, description=contentTwo, color=color)
+        if timestamp:
+            embed.timestamp = timestamp
+        embed.set_author(name=author.name, icon_url=author.avatar_url)
+        await author.send(embed=embed)
+        if file:
+            await author.send(file=file)
 
     #####
     #   create_ticket -> Creates a ticket message
@@ -116,15 +128,29 @@ class TicketCog(commands.Cog):
             def check(message):
                 return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() == "close"
             try:
-                em = discord.Embed(title="Closing ticket", description="Are you sure you want to close this ticket? Reply with 'close' if you are sure.", color=0x00a8ff)  
+                em = discord.Embed(title="Closing ticket", description="Are you sure you want to close this ticket? Reply with 'close' if you are sure.", color=0x00a8ff)                  
                 await ctx.send(embed=em)
                 await self.bot.wait_for('message', check=check, timeout=60)
+                messages = await ctx.channel.history(limit=None, oldest_first=True).flatten()
+                ticketContent = " ".join(
+                    [f"{message.content} | {message.author.name}\n" for message in messages]
+                )
+                ticket_name = ctx.channel.name
+                with open(f"tickets/{ticket_name}.txt", "w", encoding="utf8") as f:
+                    f.write(f"Here is the message log for ticket ID {ticket_name}\n----------\n\n")
+                    f.write(ticketContent) 
+            
                 await ctx.channel.delete()
                 index = data["ticket-channel-ids"].index(channel_id)
                 del data["ticket-channel-ids"][index]
-
                 with open('data.json', 'w') as f:
                     json.dump(data, f)
+                fileObject = discord.File(f"tickets/{ticket_name}.txt")
+                for user in ctx.channel.members:
+                    if not user.bot:
+                        member : discord.Member = ctx.guild.get_member(user.id)
+                        await TicketCog.SendLog(self.bot, member, f"Closed Ticked: Id {ticket_name}", 0xF42069, file=fileObject)                            
+
             except:
                 pass
 
