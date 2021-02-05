@@ -6,7 +6,7 @@ intents = discord.Intents.default()
 intents.members = True
 bot = commands.Bot(command_prefix=prefix, intents=intents)
 
-token = "NjkwMjI2ODY0MjcwMjEzMzUw.XnOV3A.9sgaOII8FZFzgbOz_9t_tiScj-Q"
+token = "yourtoken"
 
 # Events
 @bot.event
