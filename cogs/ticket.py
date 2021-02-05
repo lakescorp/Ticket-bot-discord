@@ -234,7 +234,7 @@ class TicketCog(commands.Cog):
     #
     ######
     @commands.command(name='addmentionrole', brief='Add mentionable role', description='[prefix]addmentionrole This command adds a role to the list of mentioned roles. (admin-level command).')
-    async def addmentionrole(self, ctx, role_id=None):
+    async def addmentionrole(self, ctx, role_id : discord.Role):
         data = await TicketCog.dataExists(ctx)
         if  data is None :
             return
@@ -243,7 +243,7 @@ class TicketCog(commands.Cog):
 
         for role_id in data["ticket-support-roles"]:
             try:
-                if ctx.guild.get_role(role_id) in ctx.author.roles:
+                if ctx.guild.get_role(role_id.id) in ctx.author.roles:
                     valid_user = True
             except:
                 pass
@@ -253,17 +253,13 @@ class TicketCog(commands.Cog):
             if role_id not in data["roles-to-mention"]:
 
                 try:
-                    role = ctx.guild.get_role(role_id)
 
-                    with open(data_file_name) as f:
-                        data = json.load(f)
-
-                    data["roles-to-mention"].append(role_id)
+                    data["roles-to-mention"].append(str(role_id.id))
 
                     with open('data.json', 'w') as f:
                         json.dump(data, f)
 
-                    em = discord.Embed(title="Add mention", description="You have successfully added `{}` to the list of mentioned roles.".format(role.name), color=0x00a8ff)
+                    em = discord.Embed(title="Add mention", description="You have successfully added `{}` to the list of mentioned roles.".format(role_id.name), color=0x00a8ff)
 
                     await ctx.send(embed=em)
 
@@ -288,16 +284,16 @@ class TicketCog(commands.Cog):
     #
     ######
     @commands.command(name='delmentionrole', brief='Delete mentionable role', description='[prefix]delmentionrole This command removes a role from the list of mentioned roles. (admin-level command).')
-    async def delmentionrole(self, ctx, role_id=None):
+    async def delmentionrole(self, ctx, role_id : discord.Role):
         data = await TicketCog.dataExists(ctx)
         if  data is None :
             return
         
         valid_user = False
 
-        for role_id in data["ticket-support-roles"]:
+        for role in data["ticket-support-roles"]:
             try:
-                if ctx.guild.get_role(role_id) in ctx.author.roles:
+                if ctx.guild.get_role(role) in ctx.author.roles:
                     valid_user = True
             except:
                 pass
@@ -305,15 +301,11 @@ class TicketCog(commands.Cog):
         if valid_user or ctx.author.guild_permissions.administrator:
 
             try:
-                role = ctx.guild.get_role(role_id)
-
-                with open(data_file_name) as f:
-                    data = json.load(f)
 
                 pinged_roles = data["roles-to-mention"]
 
-                if role_id in pinged_roles:
-                    index = pinged_roles.index(role_id)
+                if str(role_id.id) in pinged_roles:
+                    index = pinged_roles.index(str(role_id.id))
 
                     del pinged_roles[index]
 
@@ -359,7 +351,7 @@ class TicketCog(commands.Cog):
                             await ticket_channel.set_permissions(role, send_messages=True, read_messages=True, add_reactions=True, embed_links=True, attach_files=True, read_message_history=True, external_emojis=True)
 
                     em = discord.Embed(title="New ticket from {}#{}".format(payload.member.name, payload.member.discriminator), color=0x00a8ff)
-                    em.add_field(name="Don't worry", value="You will get help in a short time")
+                    em.add_field(name="Don't worry", value="You will get help in a short time "+payload.member.mention)
 
                     pinged_msg_content = ""
 
