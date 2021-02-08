@@ -40,7 +40,7 @@ class TicketCog(commands.Cog):
     #   Sends log to admin and ticket creator
     #
     ######
-    async def SendLog(bot, author, contentOne: str = "Default Message", contentTwo: str = "\uFEFF",  color=0x808080,  timestamp=None,  file: discord.File = None,):
+    async def SendLog(author, contentOne: str = "Default Message", contentTwo: str = "\uFEFF",  color=0x808080,  timestamp=None,  file: discord.File = None,):
         embed = discord.Embed(title=contentOne, description=contentTwo, color=color)
         if timestamp:
             embed.timestamp = timestamp
@@ -149,7 +149,8 @@ class TicketCog(commands.Cog):
                 for user in ctx.channel.members:
                     if not user.bot:
                         member : discord.Member = ctx.guild.get_member(user.id)
-                        await TicketCog.SendLog(self.bot, member, f"Closed Ticked: Id {ticket_name}", 0xF42069, file=fileObject)                            
+                        await TicketCog.SendLog(member, f"Closed Ticked: Id {ticket_name}", 0xF42069, file=fileObject)   
+                                         
 
             except:
                 pass
