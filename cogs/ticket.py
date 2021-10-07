@@ -6,9 +6,8 @@
 #
 ####
 
-import discord
+import discord, json
 from discord.ext import commands
-import json
 
 ######## editable parameters
 data_file_name = "data.json"
@@ -133,7 +132,7 @@ class TicketCog(commands.Cog):
                 await self.bot.wait_for('message', check=check, timeout=60)
                 messages = await ctx.channel.history(limit=None, oldest_first=True).flatten()
                 ticketContent = " ".join(
-                    [f"{message.content} | {message.author.name}\n" for message in messages]
+                    [f"{message.author.name} | {message.content}\n" for message in messages]
                 )
                 ticket_name = ctx.channel.name
                 with open(f"tickets/{ticket_name}.txt", "w", encoding="utf8") as f:
